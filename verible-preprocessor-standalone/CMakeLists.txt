@@ -84,12 +84,24 @@ target_include_directories(verible_core PUBLIC
 
 # Link against abseil if available
 if(absl_FOUND)
+    # Check if absl::log exists (added in Abseil LTS 20230125)
+    if(TARGET absl::log)
+        set(ABSL_HAS_LOG TRUE)
+    else()
+        set(ABSL_HAS_LOG FALSE)
+        message(STATUS "absl::log not found (requires Abseil >= 20230125), using fallback")
+    endif()
+
     target_link_libraries(verible_core PUBLIC
         absl::status
         absl::statusor
         absl::strings
-        absl::log
     )
+
+    # Only link absl::log if available
+    if(ABSL_HAS_LOG)
+        target_link_libraries(verible_core PUBLIC absl::log)
+    endif()
 else()
     # Try to find abseil libraries manually
     find_library(ABSL_STATUS absl_status)
@@ -102,8 +114,16 @@ else()
             ${ABSL_STATUS}
             ${ABSL_STATUSOR}
             ${ABSL_STRINGS}
-            ${ABSL_LOG}
         )
+
+        # Only add log if found
+        if(ABSL_LOG)
+            target_link_libraries(verible_core PUBLIC ${ABSL_LOG})
+            set(ABSL_HAS_LOG TRUE)
+        else()
+            set(ABSL_HAS_LOG FALSE)
+            message(STATUS "absl::log not found, using fallback")
+        endif()
     else()
         message(WARNING "Abseil libraries not found. Build may fail.")
     endif()
@@ -182,6 +202,11 @@ message(STATUS "  Build Type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "  Build Tests: ${BUILD_TESTS}")
 message(STATUS "  Build Examples: ${BUILD_EXAMPLES}")
 message(STATUS "  Abseil Found: ${absl_FOUND}")
+if(ABSL_HAS_LOG)
+    message(STATUS "  Abseil Log: YES (>= 20230125)")
+else()
+    message(STATUS "  Abseil Log: NO (using fallback CHECK macros)")
+endif()
 if(GTest_FOUND)
     message(STATUS "  GTest Found: YES")
 else()
