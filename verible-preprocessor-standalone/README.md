@@ -23,14 +23,29 @@ A minimal, buffer-based Verilog/SystemVerilog preprocessor library extracted fro
 - CMake 3.15 or later
 - C++17 compatible compiler (GCC 7+, Clang 5+, MSVC 2017+)
 - Flex 2.5 or later
-- Abseil C++ library
+- **Abseil C++ library >= 20230125** ⚠️ **IMPORTANT - See below**
 - (Optional) Google Test for unit tests
 
-### Ubuntu/Debian
+### ⚠️ Important: Abseil Version Requirement
+
+**Minimum Required: Abseil LTS 20230125 or later**
+
+- ❌ Ubuntu 22.04 (Abseil 20220623) - **TOO OLD** - See [DEPENDENCIES.md](DEPENDENCIES.md) for upgrade instructions
+- ✅ Ubuntu 24.04 (Abseil 20240116+) - **Works out of the box**
+- ✅ Windows vcpkg - **Works** (always provides latest)
+- ✅ macOS Homebrew - **Works** (provides latest)
+
+**If you're on Ubuntu 22.04 or Debian 11**, you'll need to build Abseil from source. See **[DEPENDENCIES.md](DEPENDENCIES.md)** for detailed instructions.
+
+### Ubuntu 24.04+ / Debian 12+ (Recommended)
 
 ```bash
 sudo apt-get install cmake g++ flex libabsl-dev libgtest-dev
 ```
+
+### Ubuntu 22.04 / Debian 11 (Requires Abseil Upgrade)
+
+See **[DEPENDENCIES.md](DEPENDENCIES.md)** for instructions on building Abseil from source.
 
 ### Windows
 

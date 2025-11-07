@@ -1,172 +1,177 @@
-# Abseil Compatibility Notes
+# Abseil Version Compatibility
 
-## Issue: Ubuntu/Debian Older Abseil Version
+## Critical Requirement
 
-### Problem
+**Minimum Version: Abseil LTS 20230125**
 
-Ubuntu 22.04 and similar distributions ship with an older version of Abseil that does not include the `absl::log` library. This library was added in **Abseil LTS 20230125**.
+The standalone Verilog preprocessor **requires Abseil 20230125 or later**.
 
-When building on systems with older Abseil, you may encounter errors like:
-```
-CMake Error: Target "verible_core" links to target "absl::log" but the target was not found.
-```
+## Why This Specific Version?
 
-### Solution
+Abseil 20230125 introduced several critical fixes:
 
-The standalone preprocessor now includes **automatic fallback support** for older Abseil versions.
-
-#### How It Works
-
-1. **CMakeLists.txt** checks if `absl::log` target exists
-2. If found, it links against it
-3. If not found, it skips the `absl::log` dependency
-4. **logging.h** provides fallback CHECK macros using standard C++
-
-#### Fallback Implementation
-
-When `absl::log` is not available, the library provides these macros:
-
-```cpp
-CHECK(condition)           // Basic assertion
-CHECK_EQ(a, b)            // Equal
-CHECK_NE(a, b)            // Not equal
-CHECK_LT(a, b)            // Less than
-CHECK_LE(a, b)            // Less than or equal
-CHECK_GT(a, b)            // Greater than
-CHECK_GE(a, b)            // Greater than or equal
-CHECK_NOTNULL(ptr)        // Null pointer check
-LOG(severity)             // Basic logging to stderr
-```
-
-These macros provide the same functionality as Abseil's log library, just with simpler implementation using `std::cerr` and `std::abort()`.
-
-## Supported Abseil Versions
-
-| Abseil Version | Status | Notes |
-|---------------|--------|-------|
-| < 20230125 | ✅ Supported | Uses fallback CHECK macros |
-| >= 20230125 | ✅ Supported | Uses native absl::log |
+1. **absl::log library** - While we provide fallback CHECK macros, other parts depend on modern Abseil
+2. **Fixed StrCat** - Older versions don't support `std::string_view` properly  
+3. **Standardized string_view** - Old versions use `absl::debian3::string_view` (incompatible)
+4. **C++17 improvements** - Better modern C++ support
 
 ## Distribution Compatibility
 
-| Distribution | Abseil Version | Status |
-|-------------|---------------|--------|
-| Ubuntu 22.04 | 20210324 | ✅ Works with fallback |
-| Ubuntu 24.04 | 20240116+ | ✅ Works with native log |
-| Debian 11 | 20200923 | ✅ Works with fallback |
-| Debian 12 | 20230125+ | ✅ Works with native log |
-| Fedora 38+ | 20230125+ | ✅ Works with native log |
-| vcpkg | Latest | ✅ Works with native log |
+| Distribution | Abseil Version | Status | Action Required |
+|-------------|---------------|--------|-----------------|
+| Ubuntu 22.04 | 20220623 | ❌ **TOO OLD** | Upgrade Abseil (see below) |
+| Ubuntu 24.04 | 20240116+ | ✅ **Works** | Install package |
+| Debian 11 | 20200923 | ❌ **TOO OLD** | Upgrade Abseil (see below) |
+| Debian 12 | 20230125+ | ✅ **Works** | Install package |
+| Fedora 38+ | 20230125+ | ✅ **Works** | Install package |
+| macOS (Homebrew) | Latest | ✅ **Works** | Install with brew |
+| Windows (vcpkg) | Latest | ✅ **Works** | Install with vcpkg |
 
-## Build Output
+## Upgrading Abseil on Ubuntu 22.04 / Debian 11
 
-When configuring, you'll see:
+If you're on Ubuntu 22.04 or Debian 11, you'll need to build Abseil from source.
 
-**With newer Abseil:**
-```
--- Configuration Summary:
---   Abseil Found: 1
---   Abseil Log: YES (>= 20230125)
-```
-
-**With older Abseil:**
-```
--- Configuration Summary:
---   Abseil Found: 1
---   Abseil Log: NO (using fallback CHECK macros)
-```
-
-## Manual Abseil Upgrade (Optional)
-
-If you want to use the native `absl::log` library on Ubuntu 22.04, you can build Abseil from source:
+### Quick Instructions
 
 ```bash
-# Clone Abseil
-git clone https://github.com/abseil/abseil-cpp.git
-cd abseil-cpp
-
-# Checkout LTS version
-git checkout 20240116.0
+# Download Abseil LTS 20240116
+wget https://github.com/abseil/abseil-cpp/archive/refs/tags/20240116.2.tar.gz
+tar xzf 20240116.2.tar.gz
+cd abseil-cpp-20240116.2
 
 # Build and install
 mkdir build && cd build
 cmake .. \
   -DCMAKE_BUILD_TYPE=Release \
   -DABSL_BUILD_TESTING=OFF \
+  -DCMAKE_POSITION_INDEPENDENT_CODE=ON \
   -DCMAKE_INSTALL_PREFIX=/usr/local
 make -j$(nproc)
 sudo make install
+sudo ldconfig
 ```
 
-Then rebuild the preprocessor library.
+Then build the preprocessor normally.
 
-## For vcpkg Users (Windows)
+**See [DEPENDENCIES.md](DEPENDENCIES.md) for complete upgrade instructions.**
 
-vcpkg always provides the latest Abseil, so you'll automatically get `absl::log` support:
+## What About the Fallback Support?
 
-```powershell
-vcpkg install abseil:x64-windows
-```
-
-## Impact on Functionality
-
-**None.** Both implementations provide identical functionality:
-- ✅ All CHECK macros work the same way
-- ✅ Same assertion behavior
-- ✅ Same error messages
-- ✅ Same program termination on check failure
-
-The only difference is the implementation detail - native Abseil log vs. fallback using standard C++.
-
-## Technical Details
-
-The fallback is implemented using C++17 `__has_include` preprocessor feature:
+The library includes fallback CHECK macros when `absl::log` is not available:
 
 ```cpp
 #if __has_include("absl/log/check.h")
-  // Use native Abseil log
-  #include "absl/log/check.h"
+  // Use native absl::log
 #else
   // Use fallback CHECK macros
-  #define CHECK(condition) ...
 #endif
 ```
 
-This ensures compile-time detection and zero runtime overhead.
+However, this **only** addresses the missing `absl::log` library. Other API incompatibilities in older Abseil versions will still cause compilation errors.
 
-## Troubleshooting
+### Fallback Scope
 
-### Still getting absl::log errors?
+**What the fallback covers:**
+- ✅ CHECK macros (CHECK, CHECK_EQ, etc.)
+- ✅ CHECK_NOTNULL
+- ✅ Basic LOG macros
 
-1. Clear your build directory:
-   ```bash
-   rm -rf build
-   mkdir build && cd build
-   ```
+**What requires Abseil 20230125+:**
+- ❌ StrCat with std::string_view
+- ❌ string_view type compatibility
+- ❌ Modern string utilities
+- ❌ Other Abseil improvements
 
-2. Reconfigure:
-   ```bash
-   cmake ..
-   ```
+## Build Output
 
-3. Check the output - you should see:
-   ```
-   -- absl::log not found (requires Abseil >= 20230125), using fallback
-   ```
+When you configure, you'll see which version you have:
 
-### Want to verify which implementation is used?
-
-Check your build output:
-```bash
-cmake .. 2>&1 | grep -i "abseil log"
+### With Abseil >= 20230125:
+```
+-- Configuration Summary:
+--   Abseil Found: 1
+--   Abseil Log: YES (>= 20230125)
 ```
 
-You should see either:
-- `Abseil Log: YES (>= 20230125)` - Using native
-- `Abseil Log: NO (using fallback CHECK macros)` - Using fallback
+### With Abseil < 20230125 but >= 20230125 (using fallback):
+```
+-- Configuration Summary:
+--   Abseil Found: 1
+--   Abseil Log: NO (using fallback CHECK macros)
+```
+
+### With Abseil < 20220000 (will fail):
+```
+-- Configuration Summary:
+--   Abseil Found: 1
+--   Abseil Log: NO (using fallback CHECK macros)
+
+[Various compilation errors will follow]
+```
+
+## Errors You'll See with Old Abseil
+
+### Error 1: string_view conversion
+```
+error: could not convert from 'std::string_view' to 'absl::debian3::string_view'
+```
+
+**Cause:** Old Abseil uses `absl::debian3::string_view` namespace  
+**Solution:** Upgrade to Abseil 20230125+
+
+### Error 2: StrCat with string_view
+```
+error: no matching function for call to 'StrCat(...)'
+note: cannot convert 'std::string_view' to 'const absl::AlphaNum&'
+```
+
+**Cause:** Old Abseil's StrCat doesn't accept std::string_view  
+**Solution:** Upgrade to Abseil 20230125+
+
+### Error 3: Missing absl::log
+```
+CMake Error: Target links to "absl::log" but the target was not found
+```
+
+**Cause:** Missing absl::log library  
+**Solution:** Either upgrade to Abseil 20230125+ or rely on fallback (but see other errors)
+
+## Alternative: Use Ubuntu 24.04
+
+The easiest solution is to use Ubuntu 24.04 or later, which includes a compatible Abseil version:
+
+```bash
+# Ubuntu 24.04
+sudo apt-get install cmake g++ flex libabsl-dev libgtest-dev
+
+# Build normally
+cd verible-preprocessor-standalone
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+```
+
+## WSL2 Users
+
+If you're using WSL2 with Ubuntu 22.04, you'll need to upgrade Abseil using the instructions above.
+
+The WSL Ubuntu distribution has the same Abseil version as native Ubuntu.
+
+## Testing Your Abseil Version
+
+Check your installed Abseil version:
+
+```bash
+# Ubuntu/Debian
+dpkg -l | grep libabsl
+
+# Or check CMake detection
+cd verible-preprocessor-standalone/build
+cmake .. 2>&1 | grep -i abseil
+```
 
 ## References
 
+- [DEPENDENCIES.md](DEPENDENCIES.md) - Complete dependency upgrade guide
 - [Abseil Releases](https://github.com/abseil/abseil-cpp/releases)
-- [Abseil Log Library](https://abseil.io/docs/cpp/guides/log)
-- [Ubuntu Abseil Package](https://packages.ubuntu.com/search?keywords=libabsl-dev)
+- [Abseil LTS Policy](https://abseil.io/about/releases)

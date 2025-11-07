@@ -43,7 +43,7 @@ absl::Status MacroDefinition::PopulateSubstitutionMap(
     substitution_map_type *arg_map) const {
   if (macro_call_args.size() != parameter_info_array_.size()) {
     return absl::InvalidArgumentError(
-        absl::StrCat("Error calling macro ", name_.text(), " with ",
+        absl::StrCat("Error calling macro ", std::string(name_.text()), " with ",
                      macro_call_args.size(), " arguments, but definition has ",
                      parameter_info_array_.size(), " formal parameters."));
     // TODO(fangism): also allow one blank argument when number of formals is 0.
@@ -70,7 +70,7 @@ absl::Status MacroDefinition::PopulateSubstitutionMap(
     substitution_map_type *arg_map) const {
   if (macro_call_args.size() != parameter_info_array_.size()) {
     return absl::InvalidArgumentError(
-        absl::StrCat("Error calling macro ", name_.text(), " with ",
+        absl::StrCat("Error calling macro ", std::string(name_.text()), " with ",
                      macro_call_args.size(), " arguments, but definition has ",
                      parameter_info_array_.size(), " formal parameters."));
     // TODO(fangism): also allow one blank argument when number of formals is 0.
