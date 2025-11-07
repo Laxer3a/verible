@@ -2,12 +2,19 @@
 
 A minimal, buffer-based Verilog/SystemVerilog preprocessor library extracted from the Verible project.
 
+## 🪟 Windows Users
+
+**Quick Start:** See **[QUICKSTART_WINDOWS.md](QUICKSTART_WINDOWS.md)** for a 10-minute setup guide!
+
+**Detailed Guide:** See **[WINDOWS_BUILD.md](WINDOWS_BUILD.md)** for complete Visual Studio instructions.
+
 ## Features
 
 - **Buffer-based operation**: No direct filesystem access
 - **Callback-driven includes**: Custom include file resolution
 - **Programmatic define management**: Add/remove defines via API
 - **Full preprocessing support**: Macros, conditionals, includes, nested expansion
+- **Cross-platform**: Linux, macOS, Windows (Visual Studio)
 
 ## Building
 
@@ -25,7 +32,36 @@ A minimal, buffer-based Verilog/SystemVerilog preprocessor library extracted fro
 sudo apt-get install cmake g++ flex libabsl-dev libgtest-dev
 ```
 
-### Build Instructions
+### Windows
+
+**Quick Start:**
+```powershell
+# Using the build script
+.\build.bat
+
+# Or manually
+mkdir build
+cd build
+cmake .. -DCMAKE_TOOLCHAIN_FILE=C:\vcpkg\scripts\buildsystems\vcpkg.cmake
+cmake --build . --config Release
+```
+
+**📘 For detailed Windows instructions, see [WINDOWS_BUILD.md](WINDOWS_BUILD.md)**
+
+This includes:
+- Visual Studio setup
+- Installing dependencies with vcpkg
+- Building with Visual Studio IDE
+- Building from command line
+- Troubleshooting common issues
+
+### macOS
+
+```bash
+brew install cmake flex abseil googletest
+```
+
+### Build Instructions (Linux/macOS)
 
 ```bash
 mkdir build

@@ -13,6 +13,11 @@ verible-preprocessor-standalone/
 ├── CMakeLists.txt              - Main CMake build file
 ├── README.md                   - Complete documentation
 ├── MANIFEST.txt                - This file
+├── SUMMARY.md                  - Project overview and achievements
+├── WINDOWS_BUILD.md            - Detailed Windows/Visual Studio guide
+├── QUICKSTART_WINDOWS.md       - 10-minute Windows setup guide
+├── build.bat                   - Windows build script
+├── verify.sh                   - Unix verification script
 │
 ├── api/                        - Simple C++ API (2 files)
 │   ├── verilog_preprocessor.h  - Main API header
@@ -39,15 +44,17 @@ verible-preprocessor-standalone/
 FILE COUNT SUMMARY
 =================================================================
 
-Total Files: 52
+Total Files: 58
 
 By Category:
 - API Layer:                2 files
 - Examples:                 1 file
 - Tests:                    1 file
 - Build System:             1 file  (CMakeLists.txt)
-- Documentation:            2 files (README.md, MANIFEST.txt)
-- Verible Core:            45 files
+- Build Scripts:            2 files (build.bat, verify.sh)
+- Documentation:            5 files (README.md, MANIFEST.txt, SUMMARY.md,
+                                    WINDOWS_BUILD.md, QUICKSTART_WINDOWS.md)
+- Verible Core:            46 files
 
 Source Code:
 - Headers (.h):            29 files

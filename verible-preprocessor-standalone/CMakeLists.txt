@@ -6,6 +6,21 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Platform-specific settings
+if(MSVC)
+    # Enable parallel builds in MSVC
+    add_compile_options(/MP)
+    # Increase warning level
+    add_compile_options(/W3)
+    # Suppress specific warnings if needed
+    add_compile_options(/wd4996)  # Disable deprecation warnings
+    # Use UTF-8 encoding
+    add_compile_options(/utf-8)
+else()
+    # GCC/Clang warnings
+    add_compile_options(-Wall -Wextra)
+endif()
+
 # Options
 option(BUILD_TESTS "Build tests" ON)
 option(BUILD_EXAMPLES "Build examples" ON)
