@@ -1,0 +1,142 @@
+=================================================================
+STANDALONE VERILOG PREPROCESSOR LIBRARY - FILE MANIFEST
+=================================================================
+
+This is a complete standalone extraction of the Verilog preprocessor
+from the Verible project. All necessary files are included.
+
+=================================================================
+DIRECTORY STRUCTURE
+=================================================================
+
+verible-preprocessor-standalone/
+├── CMakeLists.txt              - Main CMake build file
+├── README.md                   - Complete documentation
+├── MANIFEST.txt                - This file
+│
+├── api/                        - Simple C++ API (2 files)
+│   ├── verilog_preprocessor.h  - Main API header
+│   └── verilog_preprocessor.cc - API implementation
+│
+├── examples/                   - Example programs
+│   └── example.cc              - Comprehensive usage examples
+│
+├── tests/                      - Unit tests
+│   └── verilog_preprocessor_test.cc - Test suite
+│
+└── verible/                    - Vendored Verible components (45 files)
+    ├── common/
+    │   ├── lexer/              - Lexer infrastructure (5 files)
+    │   ├── strings/            - String utilities (7 files)
+    │   ├── text/               - Token/text utilities (18 files)
+    │   └── util/               - Utility headers (5 files)
+    └── verilog/
+        ├── analysis/           - Analysis utilities (2 files)
+        ├── parser/             - Verilog lexer (7 files)
+        └── preprocessor/       - Core preprocessor (2 files)
+
+=================================================================
+FILE COUNT SUMMARY
+=================================================================
+
+Total Files: 52
+
+By Category:
+- API Layer:                2 files
+- Examples:                 1 file
+- Tests:                    1 file
+- Build System:             1 file  (CMakeLists.txt)
+- Documentation:            2 files (README.md, MANIFEST.txt)
+- Verible Core:            45 files
+
+Source Code:
+- Headers (.h):            29 files
+- Implementation (.cc):    16 files
+- Flex source (.lex):       1 file
+
+=================================================================
+EXTERNAL DEPENDENCIES
+=================================================================
+
+Required:
+- C++17 compiler (GCC 7+, Clang 5+, MSVC 2017+)
+- CMake 3.15+
+- Flex 2.5+ (build-time only)
+- Abseil C++ library
+
+Optional:
+- Google Test (for unit tests)
+
+=================================================================
+BUILD INSTRUCTIONS
+=================================================================
+
+mkdir build && cd build
+cmake ..
+make -j$(nproc)
+
+For detailed instructions, see README.md
+
+=================================================================
+KEY API FILES
+=================================================================
+
+User-Facing API:
+  api/verilog_preprocessor.h    - Main include file
+  api/verilog_preprocessor.cc   - API implementation
+
+Core Preprocessor:
+  verible/verilog/preprocessor/verilog-preprocess.h
+  verible/verilog/preprocessor/verilog-preprocess.cc
+
+Lexer:
+  verible/verilog/parser/verilog-lexer.h
+  verible/verilog/parser/verilog-lexer.cc
+  verible/verilog/parser/verilog.lex  (Flex source)
+
+=================================================================
+USAGE EXAMPLE
+=================================================================
+
+#include "verilog_preprocessor.h"
+
+using namespace verilog_preprocessor;
+
+VerilogPreprocessor pp;
+pp.AddDefine("WIDTH", "32");
+
+PreprocessResult result = pp.Preprocess(source_code);
+if (result.success()) {
+    // Use result.preprocessed_code
+}
+
+See examples/example.cc for comprehensive examples.
+
+=================================================================
+MINIMAL DEPENDENCIES
+=================================================================
+
+This standalone package includes ONLY the files necessary for
+preprocessing:
+
+✓ Core preprocessor logic
+✓ Verilog lexer
+✓ Token and macro management
+✓ Text structure handling
+✓ Essential utilities
+
+NOT included (not needed):
+✗ Verilog parser (syntax tree building)
+✗ Formatters
+✗ Linters
+✗ Other Verible tools
+
+=================================================================
+NO EXTERNAL FILE REFERENCES
+=================================================================
+
+All source files are self-contained in this directory structure.
+No references to external Verible installation.
+No dependency on Bazel build system.
+
+=================================================================
